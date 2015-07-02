@@ -43,7 +43,8 @@ void setup() {
 }
 
 void loop() {
-
+// high to turn on backlight and low to turn off
+//digitalWrite(BACKLIGHT, HIGH);
   int state = 0;
   //Refresh the button pressed.
   lcd_key = read_LCD_buttons();  // read the buttons
