@@ -138,7 +138,10 @@ void temperature() {
 
 void mode() {
   lcd.print("Mode: ");
-  lcd.print("Cool or Heat");
+  lcd.print("Cool or Heat or Off");
+  // when selection above is changed, wait a second
+  // (this way it doesnt send the command while cycling through options),
+  // then send do the following:
 }
 
 void fan() {
