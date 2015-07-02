@@ -20,7 +20,8 @@ int adc_key_in  = 0;
 #define BACKLIGHT 10
 
 // read the buttons
-int read_LCD_buttons() {
+int read_LCD_buttons()
+{
  adc_key_in = analogRead(0);      // read the value from the sensor
  // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
  // we add approx 50 to those values and check to see if we are close
@@ -108,13 +109,8 @@ void loop() {
   delay(150);
 }
 
-int get_temp() {
-  int temp;
-  temp = 73;
-  return temp;
-}
-
 void humidity() {
+  // code to get DHT reading coming soon
   int humidity_lvl = 44;
   lcd.print("Humidity: ");
   lcd.print(humidity_lvl);
@@ -122,13 +118,20 @@ void humidity() {
 }
 
 void temperature() {
+  // code to get DHT reading coming soon
+  // current temperature  
+  int ctemp = 73;
+  // requested temperature
+  int rtemp = 69;
   lcd.setCursor(0,0);
   lcd.print("Cur Temp: ");
-  lcd.print(get_temp());
+  lcd.print(ctemp);
+  // degree symbol
   lcd.print((char)223);
   lcd.setCursor(0,1);
   lcd.print("Req Temp: ");
-  lcd.print("77");
+  lcd.print(rtemp);
+  // degree symbol
   lcd.print((char)223);
 }
 
