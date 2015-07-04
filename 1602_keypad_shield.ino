@@ -7,15 +7,22 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 #define BACKLIGHT 10
 
-int max_panels = 4;
-int panel_num = 1;
+// initialize a few values
 int last_panel = 0;
 int press_count = 0;
 int timer = 0;
+int rtemp = 0;
+int sysem_mode = 0;
+int fan_mode = 0;
 
-long address = 0;
+int max_panels = 4;
+int panel_num = 1;
 int ctemp = 77;
-int rtemp = 69;
+
+// address of where were going to store the value in eeprom
+int rtemp_address = 0;
+int mode_address = 4;
+int fan_address = 8;
 
 // define some values used by the panel and buttons
 int lcd_key     = 0;
@@ -31,6 +38,7 @@ int adc_key_in  = 0;
 // read the buttons
 int read_LCD_buttons() {
  adc_key_in = analogRead(0);      // read the value from the sensor
+
  // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
  // we add approx 50 to those values and check to see if we are close
  if (adc_key_in > 1000) return btnNONE; // We make this the 1st option for speed reasons since it will be the most likely result
@@ -39,18 +47,25 @@ int read_LCD_buttons() {
  if (adc_key_in < 195)  return btnUP; 
  if (adc_key_in < 380)  return btnDOWN; 
  if (adc_key_in < 555)  return btnLEFT; 
- if (adc_key_in < 790)  return btnSELECT;   
+ if (adc_key_in < 790)  return btnSELECT;
 
  return btnNONE;  // when all others fail, return this...
 }
 
 void setup() {
+  // reset rtemp if we have som bizare value by default
+  //eeprom_write(rtemp_address, 69);
   Serial.begin(9600);
   pinMode(BACKLIGHT, OUTPUT);
   //Set the characters and column numbers.
   lcd.begin(16, 2);
   // turn on backlight
   digitalWrite(BACKLIGHT, HIGH);
+
+  // now lets read what we already have saved
+  rtemp = eeprom_read(rtemp_address);
+  sysem_mode = eeprom_read(mode_address);
+  fan_mode = eeprom_read(fan_address);
 }
 
 void loop() {
@@ -121,7 +136,9 @@ void loop() {
   }
 
   // add to timer count (will need adjusted above if delay is adjusted below)
-  timer++;
+  if (digitalRead(BACKLIGHT) == LOW) {
+    timer++;
+  }
   //Small delay to hopefully help with bouncing
   delay(150);
 }
@@ -144,11 +161,6 @@ void dht_temperature() {
 
 void requested_temperature(int lcd_key) {
 
-  // address of where were going to store the value in eeprom
-  address = 1;
-  // now lets read what we already have saved
-  rtemp = eeprom_read(address);
-  
   // add or increase temp based on up/down arrow
   if (lcd_key == 1) {
     rtemp = rtemp + 1;
@@ -164,15 +176,12 @@ void requested_temperature(int lcd_key) {
   // whene select button pressed, we save the data to eeprom and print SAVED to lcd
   if (lcd_key == 4) {
     lcd.clear();
-    eeprom_write(address, rtemp);
+    eeprom_write(rtemp_address, rtemp);
   }
 }
 
 void mode(int lcd_key) {
 
-  // address of where were going to store the value in eeprom
-  address = 2;
-  
   lcd.print("Mode: ");
 
   press_count++;
@@ -195,9 +204,6 @@ void mode(int lcd_key) {
 
 void fan(int lcd_key) {
 
-  // address of where were going to store the value in eeprom
-  address = 3;
-  
   lcd.print("Fan: ");
 
   press_count++;
