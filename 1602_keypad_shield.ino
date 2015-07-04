@@ -158,16 +158,13 @@ void requested_temperature(int lcd_key) {
 
   lcd.print("Req Temp: ");
   lcd.print(rtemp);
-  // degree symbol
+  // degree symbol (doesnt print right in openhab apple app, but we are only using for lcd here, so should be fine)
   lcd.print((char)223);
 
+  // whene select button pressed, we save the data to eeprom and print SAVED to lcd
   if (lcd_key == 4) {
-    // whene select button pressed, we save the data to eeprom and print SAVED to lcd
     lcd.clear();
     eeprom_write(address, rtemp);
-    lcd.setCursor(6,0);
-    lcd.print("SAVED");
-    delay(500);
   }
 }
 
@@ -227,6 +224,11 @@ void eeprom_write(int address, long value) {
     EEPROM.write(address + 1, three);
     EEPROM.write(address + 2, two);
     EEPROM.write(address + 3, one);
+
+    // prit some feedback to the lcd
+    lcd.setCursor(6,0);
+    lcd.print("SAVED");
+    delay(500);
 }
 long eeprom_read(long address) {
     //Read the 4 bytes from the eeprom memory.
