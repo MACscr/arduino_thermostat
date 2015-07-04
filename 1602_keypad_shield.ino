@@ -5,6 +5,8 @@
 // Initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
+#define BACKLIGHT 10
+
 int max_panels = 4;
 int panel_num = 1;
 int last_panel = 0;
@@ -153,6 +155,11 @@ void requested_temperature(int lcd_key) {
   lcd.print(rtemp);
   // degree symbol
   lcd.print((char)223);
+
+  if (lcd_key == 4) {
+    // whene select button sent, submit rtemp and then clear lcd briefly to signify something was done?
+    lcd.clear();
+  }
 }
 
 void mode(int lcd_key) {
