@@ -130,7 +130,7 @@ void temperature(int lcd_key) {
   // add or increase temp based on up/down arrow
   if (lcd_key == 1) {
     rtemp = rtemp + 1;
-  }else if (lcd_key ==2) {
+  }else if (lcd_key == 2) {
     rtemp = rtemp - 1;
   }
   
@@ -175,25 +175,25 @@ void fan(int lcd_key) {
       lcd.print("Auto");
       break;
     case 1:
-      lcd.print("Off ");
+      lcd.print("On ");
       break;
   }
 }
 
 //Display Panel Option based on Index.
 void displayPanel(int panel_num,int lcd_key) {
-     switch (panel_num) {
-      case 1:
-          temperature(lcd_key);
-        break;
-      case 2:
-          humidity();
-        break;
-      case 3:
-          mode(lcd_key);
-        break;
-      case 4:
-          fan(lcd_key);
-        break;
-    }
+   switch (panel_num) {
+    case 1:
+        temperature(lcd_key);
+      break;
+    case 2:
+        humidity();
+      break;
+    case 3:
+        mode(lcd_key);
+      break;
+    case 4:
+        fan(lcd_key);
+      break;
+  }
 }
