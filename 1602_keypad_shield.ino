@@ -5,8 +5,6 @@
 // Initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-#define BACKLIGHT 10
-
 int max_panels = 4;
 int panel_num = 1;
 int last_panel = 0;
