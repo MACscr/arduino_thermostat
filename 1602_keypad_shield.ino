@@ -1,5 +1,6 @@
 #include <DHT.h>
 #include <LiquidCrystal.h>
+#include <EEPROM.h>
 
 // Initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -7,6 +8,7 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 int max_panels = 4;
 int panel_num = 1;
 int last_panel = 0;
+int press_count = 0;
 
 // define some values used by the panel and buttons
 int lcd_key     = 0;
@@ -88,24 +90,18 @@ void loop() {
     panel_num = last_panel + 1;
     last_panel = panel_num;
     lcd.clear();
-    Serial.print("NewPanel ");
-    Serial.print(panel_num);
-    Serial.print(" OldPanel ");
-    Serial.println(last_panel);
 
   // if above logic is not met and left button is pressed, subtract 1 from last_pane
   }else if (state == 1) {
     panel_num = last_panel - 1;
     last_panel = panel_num;
     lcd.clear();
-    Serial.print("NewPanel ");
-    Serial.print(panel_num);
-    Serial.print(" OldPanel ");
-    Serial.println(last_panel);
   }
 
-  //display panel
-  displayPanel(panel_num);
+  //display panel, but dont keep recreating it if no button is pressed
+  if (panel_num == 1 || lcd_key != 5) {
+    displayPanel(panel_num,lcd_key);
+  }
   //Small delay to hopefully help with bouncing
   delay(150);
 }
@@ -118,17 +114,26 @@ void humidity() {
   lcd.print("%");
 }
 
-void temperature() {
+void temperature(int lcd_key) {
   // code to get DHT reading coming soon
   // current temperature  
   int ctemp = 73;
-  // requested temperature
-  int rtemp = 69;
   lcd.setCursor(0,0);
   lcd.print("Cur Temp: ");
   lcd.print(ctemp);
   // degree symbol
   lcd.print((char)223);
+
+  // requested temperature
+  int rtemp = 69;
+
+  // add or increase temp based on up/down arrow
+  if (lcd_key == 1) {
+    rtemp = rtemp + 1;
+  }else if (lcd_key ==2) {
+    rtemp = rtemp - 1;
+  }
+  
   lcd.setCursor(0,1);
   lcd.print("Req Temp: ");
   lcd.print(rtemp);
@@ -136,33 +141,59 @@ void temperature() {
   lcd.print((char)223);
 }
 
-void mode() {
+void mode(int lcd_key) {
+  Serial.println(press_count);
   lcd.print("Mode: ");
-  lcd.print("Cool or Heat or Off");
+
+  press_count++;
+  lcd.setCursor(6,0);
+  switch (press_count%3) {
+    case 0:
+      lcd.print("Cool");
+      break;
+    case 1:
+      lcd.print("Heat");
+      break;
+    case 2:
+      lcd.print("Off ");
+      break;
+  }
   // when selection above is changed, wait a second
   // (this way it doesnt send the command while cycling through options),
   // then send do the following:
 }
 
-void fan() {
+void fan(int lcd_key) {
+  Serial.print("Key Pressed: ");
+  Serial.println(lcd_key);
   lcd.print("Fan: ");
-  lcd.print("Auto or On");
+
+  press_count++;
+  lcd.setCursor(5,0);
+  switch (press_count%2) {
+    case 0:
+      lcd.print("Auto");
+      break;
+    case 1:
+      lcd.print("Off ");
+      break;
+  }
 }
 
 //Display Panel Option based on Index.
-void displayPanel(int panel_num) {
+void displayPanel(int panel_num,int lcd_key) {
      switch (panel_num) {
       case 1:
-          temperature();
+          temperature(lcd_key);
         break;
       case 2:
           humidity();
         break;
       case 3:
-          mode();
+          mode(lcd_key);
         break;
       case 4:
-          fan();
+          fan(lcd_key);
         break;
     }
 }
