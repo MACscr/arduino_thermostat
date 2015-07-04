@@ -10,6 +10,9 @@ int panel_num = 1;
 int last_panel = 0;
 int press_count = 0;
 
+int ctemp = 77;
+int rtemp = 69;
+
 // define some values used by the panel and buttons
 int lcd_key     = 0;
 int adc_key_in  = 0;
@@ -114,27 +117,22 @@ void humidity() {
   lcd.print("%");
 }
 
-void temperature(int lcd_key) {
-  // code to get DHT reading coming soon
-  // current temperature  
-  int ctemp = 73;
+void dht_temperature() {
   lcd.setCursor(0,0);
   lcd.print("Cur Temp: ");
   lcd.print(ctemp);
   // degree symbol
   lcd.print((char)223);
+}
 
-  // requested temperature
-  int rtemp = 69;
-
+void requested_temperature(int lcd_key) {
   // add or increase temp based on up/down arrow
   if (lcd_key == 1) {
     rtemp = rtemp + 1;
   }else if (lcd_key == 2) {
     rtemp = rtemp - 1;
   }
-  
-  lcd.setCursor(0,1);
+
   lcd.print("Req Temp: ");
   lcd.print(rtemp);
   // degree symbol
@@ -142,12 +140,11 @@ void temperature(int lcd_key) {
 }
 
 void mode(int lcd_key) {
-  Serial.println(press_count);
   lcd.print("Mode: ");
 
   press_count++;
   lcd.setCursor(6,0);
-  switch (press_count%3) {
+  switch (press_count % 3) {
     case 0:
       lcd.print("Cool");
       break;
@@ -170,7 +167,7 @@ void fan(int lcd_key) {
 
   press_count++;
   lcd.setCursor(5,0);
-  switch (press_count%2) {
+  switch (press_count % 2) {
     case 0:
       lcd.print("Auto");
       break;
@@ -184,7 +181,10 @@ void fan(int lcd_key) {
 void displayPanel(int panel_num,int lcd_key) {
    switch (panel_num) {
     case 1:
-        temperature(lcd_key);
+        dht_temperature();
+        // set to second row
+        lcd.setCursor(0,1);
+        requested_temperature(lcd_key);
       break;
     case 2:
         humidity();
