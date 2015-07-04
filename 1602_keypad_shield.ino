@@ -11,8 +11,9 @@ int max_panels = 4;
 int panel_num = 1;
 int last_panel = 0;
 int press_count = 0;
-
 int timer = 0;
+
+long address = 0;
 int ctemp = 77;
 int rtemp = 69;
 
@@ -48,15 +49,14 @@ void setup() {
   pinMode(BACKLIGHT, OUTPUT);
   //Set the characters and column numbers.
   lcd.begin(16, 2);
+  // turn on backlight
   digitalWrite(BACKLIGHT, HIGH);
 }
 
 void loop() {
 
-  // high to turn on backlight and low to turn off
-  //digitalWrite(BACKLIGHT, HIGH);
   int state = 0;
-  //Refresh the button pressed.
+  // Refresh the button pressed.
   lcd_key = read_LCD_buttons();  // read the buttons
 
   // check for button activity, if not, turn off backlight
@@ -67,10 +67,10 @@ void loop() {
   }else if (timer > 160) {
     digitalWrite(BACKLIGHT, LOW);
   }
-  //Set the Row 0, Col 0 position.
+  // Set the Row 0, Col 0 position of cursor on LCD
   lcd.setCursor(0,0);
 
-  //Check values from LCD Keypad
+  // Check values from LCD Keypad
   if (lcd_key == 3) {
     //Left
     state = 1;
@@ -85,8 +85,6 @@ void loop() {
     state = 4;
   }
 
-  lcd.print(timer);
-  
   // if pretty much ran for the first time, last_panel will be zero, so lets set one
   if (last_panel == 0) {
     last_panel = 1;
@@ -121,7 +119,8 @@ void loop() {
   if (panel_num == 1 || lcd_key != 5) {
     displayPanel(panel_num,lcd_key);
   }
-  
+
+  // add to timer count (will need adjusted above if delay is adjusted below)
   timer++;
   //Small delay to hopefully help with bouncing
   delay(150);
@@ -144,6 +143,12 @@ void dht_temperature() {
 }
 
 void requested_temperature(int lcd_key) {
+
+  // address of where were going to store the value in eeprom
+  address = 1;
+  // now lets read what we already have saved
+  rtemp = eeprom_read(address);
+  
   // add or increase temp based on up/down arrow
   if (lcd_key == 1) {
     rtemp = rtemp + 1;
@@ -157,12 +162,20 @@ void requested_temperature(int lcd_key) {
   lcd.print((char)223);
 
   if (lcd_key == 4) {
-    // whene select button sent, submit rtemp and then clear lcd briefly to signify something was done?
+    // whene select button pressed, we save the data to eeprom and print SAVED to lcd
     lcd.clear();
+    eeprom_write(address, rtemp);
+    lcd.setCursor(6,0);
+    lcd.print("SAVED");
+    delay(500);
   }
 }
 
 void mode(int lcd_key) {
+
+  // address of where were going to store the value in eeprom
+  address = 2;
+  
   lcd.print("Mode: ");
 
   press_count++;
@@ -184,6 +197,10 @@ void mode(int lcd_key) {
 }
 
 void fan(int lcd_key) {
+
+  // address of where were going to store the value in eeprom
+  address = 3;
+  
   lcd.print("Fan: ");
 
   press_count++;
@@ -197,6 +214,30 @@ void fan(int lcd_key) {
       break;
   }
 }
+
+void eeprom_write(int address, long value) {
+    //Decomposition from a long to 4 bytes by using bitshift.
+    //One = Most significant -> Four = Least significant byte
+    byte four = (value & 0xFF);
+    byte three = ((value >> 8) & 0xFF);
+    byte two = ((value >> 16) & 0xFF);
+    byte one = ((value >> 24) & 0xFF);
+    //Write the 4 bytes into the eeprom memory.
+    EEPROM.write(address, four);
+    EEPROM.write(address + 1, three);
+    EEPROM.write(address + 2, two);
+    EEPROM.write(address + 3, one);
+}
+long eeprom_read(long address) {
+    //Read the 4 bytes from the eeprom memory.
+    long four = EEPROM.read(address);
+    long three = EEPROM.read(address + 1);
+    long two = EEPROM.read(address + 2);
+    long one = EEPROM.read(address + 3);
+    //Return the recomposed long by using bitshift.
+    return ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
+}
+
 
 //Display Panel Option based on Index.
 void displayPanel(int panel_num,int lcd_key) {
