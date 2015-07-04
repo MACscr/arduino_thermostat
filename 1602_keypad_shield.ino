@@ -5,24 +5,20 @@
 // Initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
+#define BACKLIGHT 10
+
 int max_panels = 4;
 int panel_num = 1;
 int last_panel = 0;
 int press_count = 0;
 
+int timer = 0;
 int ctemp = 77;
 int rtemp = 69;
 
 // define some values used by the panel and buttons
 int lcd_key     = 0;
 int adc_key_in  = 0;
-#define btnRIGHT  0
-#define btnUP     1
-#define btnDOWN   2
-#define btnLEFT   3
-#define btnSELECT 4
-#define btnNONE   5
-#define BACKLIGHT 10
 
 // read the buttons
 int read_LCD_buttons()
@@ -30,15 +26,15 @@ int read_LCD_buttons()
  adc_key_in = analogRead(0);      // read the value from the sensor
  // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
  // we add approx 50 to those values and check to see if we are close
- if (adc_key_in > 1000) return btnNONE; // We make this the 1st option for speed reasons since it will be the most likely result
+ if (adc_key_in > 1000) return 5; // We make this the 1st option for speed reasons since it will be the most likely result
 
- if (adc_key_in < 50)   return btnRIGHT;  
- if (adc_key_in < 195)  return btnUP; 
- if (adc_key_in < 380)  return btnDOWN; 
- if (adc_key_in < 555)  return btnLEFT; 
- if (adc_key_in < 790)  return btnSELECT;   
+ if (adc_key_in < 50)   return 0;  
+ if (adc_key_in < 195)  return 1; 
+ if (adc_key_in < 380)  return 2; 
+ if (adc_key_in < 555)  return 3; 
+ if (adc_key_in < 790)  return 4;   
 
- return btnNONE;  // when all others fail, return this...
+ return 5;  // when all others fail, return 5 for nothing happening.
 }
 
 void setup() {
@@ -48,11 +44,23 @@ void setup() {
 }
 
 void loop() {
-// high to turn on backlight and low to turn off
-//digitalWrite(BACKLIGHT, HIGH);
+
+  // high to turn on backlight and low to turn off
+  //digitalWrite(BACKLIGHT, HIGH);
   int state = 0;
   //Refresh the button pressed.
   lcd_key = read_LCD_buttons();  // read the buttons
+
+  Serial.println(lcd_key);
+
+  if (lcd_key < 5) {
+    digitalWrite(BACKLIGHT, HIGH);
+    timer = 0;
+  // if its been awhile since anyone touched a button, lets turn off the backlight
+  }else if (timer > 60) {
+    digitalWrite(BACKLIGHT, LOW);
+    Serial.println("turned off");
+  }
   //Set the Row 0, Col 0 position.
   lcd.setCursor(0,0);
 
@@ -70,6 +78,8 @@ void loop() {
     //Down
     state = 4;
   }
+
+  lcd.print(timer);
   
   // if pretty much ran for the first time, last_panel will be zero, so lets set one
   if (last_panel == 0) {
@@ -105,6 +115,8 @@ void loop() {
   if (panel_num == 1 || lcd_key != 5) {
     displayPanel(panel_num,lcd_key);
   }
+  
+  timer++;
   //Small delay to hopefully help with bouncing
   delay(150);
 }
@@ -181,7 +193,7 @@ void fan(int lcd_key) {
 void displayPanel(int panel_num,int lcd_key) {
    switch (panel_num) {
     case 1:
-        dht_temperature();
+        //dht_temperature();
         // set to second row
         lcd.setCursor(0,1);
         requested_temperature(lcd_key);
