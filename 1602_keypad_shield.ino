@@ -173,6 +173,8 @@ void dht_temperature() {
 
 void requested_temperature(int lcd_key) {
 
+  //rtemp
+
   // add or increase temp based on up/down arrow
   if (lcd_key == 1) {
     rtemp = rtemp + 1;
@@ -194,7 +196,7 @@ void requested_temperature(int lcd_key) {
 
 void mode(int lcd_key) {
 
-  //sysem_mode = eeprom_read(mode_address);
+  //sysem_mode
 
   lcd.print("Mode: ");
 
@@ -202,23 +204,29 @@ void mode(int lcd_key) {
   lcd.setCursor(6,0);
   switch (press_count % 3) {
     case 0:
-      lcd.print("Cool");
+      lcd.print("Off ");
+      system_mode = 0;
       break;
     case 1:
-      lcd.print("Heat");
+      lcd.print("Cool");
+       system_mode = 1;
       break;
     case 2:
-      lcd.print("Off ");
+      lcd.print("Heat");
+      system_mode = 2;
       break;
   }
-  // when selection above is changed, wait a second
-  // (this way it doesnt send the command while cycling through options),
-  // then send do the following:
+  
+  // whene select button pressed, we save the data to eeprom and print SAVED to lcd
+  if (lcd_key == 4) {
+    lcd.clear();
+    eeprom_write(mode_address, system_mode);
+  }  
 }
 
 void fan(int lcd_key) {
 
-  //fan_mode = eeprom_read(fan_address);
+  //fan_mode
 
   lcd.print("Fan: ");
 
@@ -227,11 +235,19 @@ void fan(int lcd_key) {
   switch (press_count % 2) {
     case 0:
       lcd.print("Auto");
+      fan_mode = 0;
       break;
     case 1:
       lcd.print("On ");
+      fan_mode = 1;
       break;
   }
+
+  // whene select button pressed, we save the data to eeprom and print SAVED to lcd
+  if (lcd_key == 4) {
+    lcd.clear();
+    eeprom_write(fan_address, fan_mode);
+  }  
 }
 
 void eeprom_write(int address, long value) {
