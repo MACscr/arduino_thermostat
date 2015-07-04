@@ -12,7 +12,7 @@ int last_panel = 0;
 int press_count = 0;
 int timer = 0;
 int rtemp = 0;
-int sysem_mode = 0;
+int system_mode = 0;
 int fan_mode = 0;
 
 int max_panels = 4;
@@ -53,8 +53,7 @@ int read_LCD_buttons() {
 }
 
 void setup() {
-  // reset rtemp if we have som bizare value by default
-  //eeprom_write(rtemp_address, 69);
+
   Serial.begin(9600);
   pinMode(BACKLIGHT, OUTPUT);
   //Set the characters and column numbers.
@@ -62,10 +61,23 @@ void setup() {
   // turn on backlight
   digitalWrite(BACKLIGHT, HIGH);
 
+  // reset rtemp if we have som bizare value by default
+  //eeprom_write(rtemp_address, 69);
+  //eeprom_write(mode_address, 0);
+  //eeprom_write(fan_address, 0);
+
   // now lets read what we already have saved
   rtemp = eeprom_read(rtemp_address);
-  sysem_mode = eeprom_read(mode_address);
+  system_mode = eeprom_read(mode_address);
   fan_mode = eeprom_read(fan_address);
+
+  Serial.println("Initial Values");
+  Serial.print("rtemp "); 
+  Serial.println(rtemp);
+  Serial.print("system_mode "); 
+  Serial.println(system_mode);
+  Serial.print("fan_mode "); 
+  Serial.println(fan_mode);
 }
 
 void loop() {
@@ -182,6 +194,8 @@ void requested_temperature(int lcd_key) {
 
 void mode(int lcd_key) {
 
+  //sysem_mode = eeprom_read(mode_address);
+
   lcd.print("Mode: ");
 
   press_count++;
@@ -203,6 +217,8 @@ void mode(int lcd_key) {
 }
 
 void fan(int lcd_key) {
+
+  //fan_mode = eeprom_read(fan_address);
 
   lcd.print("Fan: ");
 
