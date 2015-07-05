@@ -5,8 +5,6 @@
 // Initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-#define BACKLIGHT 10
-
 // initialize a few values
 int last_panel = 0;
 int press_count = 0;
@@ -196,10 +194,12 @@ void requested_temperature(int lcd_key) {
 
 void mode(int lcd_key) {
 
-  //sysem_mode
+  //example system_mode value from eeprom
+  //system_mode = 2;
 
   lcd.print("Mode: ");
 
+  // press_count used for cycling through values below
   press_count++;
   lcd.setCursor(6,0);
   switch (press_count % 3) {
@@ -209,7 +209,7 @@ void mode(int lcd_key) {
       break;
     case 1:
       lcd.print("Cool");
-       system_mode = 1;
+      system_mode = 1;
       break;
     case 2:
       lcd.print("Heat");
@@ -227,7 +227,7 @@ void mode(int lcd_key) {
 void fan(int lcd_key) {
 
   //example fan_mode value from eeprom
-  //fan_mode = 1
+  //fan_mode = 1;
 
   lcd.print("Fan: ");
 
@@ -244,6 +244,8 @@ void fan(int lcd_key) {
       fan_mode = 1;
       break;
   }
+
+  Serial.println(press_count);
 
   // whene select button pressed, we save the data to eeprom and print SAVED to lcd
   if (lcd_key == 4) {
