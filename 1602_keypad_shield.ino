@@ -196,7 +196,7 @@ void requested_temperature(int lcd_key) {
 
 void mode(int lcd_key) {
 
-  //system_mode
+  //sysem_mode
 
   lcd.print("Mode: ");
 
@@ -226,10 +226,12 @@ void mode(int lcd_key) {
 
 void fan(int lcd_key) {
 
-  //fan_mode
+  //example fan_mode value from eeprom
+  //fan_mode = 1
 
   lcd.print("Fan: ");
 
+  // press_count used for cycling through values below
   press_count++;
   lcd.setCursor(5,0);
   switch (press_count % 2) {
@@ -238,7 +240,7 @@ void fan(int lcd_key) {
       fan_mode = 0;
       break;
     case 1:
-      lcd.print("On ");
+      lcd.print("On  ");
       fan_mode = 1;
       break;
   }
