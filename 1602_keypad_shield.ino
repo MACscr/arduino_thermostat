@@ -22,6 +22,9 @@ int rtemp_address = 0;
 int mode_address = 4;
 int fan_address = 8;
 
+// Declare working variables
+int mode = eeprom_read(mode_address);
+
 // define some values used by the panel and buttons
 int lcd_key     = 0;
 int adc_key_in  = 0;
@@ -222,6 +225,48 @@ void mode(int lcd_key) {
     lcd.clear();
     eeprom_write(mode_address, system_mode);
   }  
+}
+
+void mode2(int lcd_key) {
+	/* Check that the button pressed is something we want to
+	 * respond to, and determine how.
+	 */
+	if (lcd_key == btnUP || lcd_key == btnDOWN){
+		/* Here, we know we want to change the mode. Get basic
+		 * ground work out of the way
+		 */
+		lcd.print("Mode: ");
+		lcd.setCursor(6,0);
+		
+		/* Now change the unsaved mode */
+		if (lcd_key == btnUP) {
+			if (mode < 2) mode++;
+		}
+		else if (lcd_key == btnDOWN) {
+			if (mode > 0) mode--;
+		}
+		switch(mode) {
+		case 0:
+			lcd.print("Off");
+			break;
+		case 1:
+			lcd.print("Cool");
+			break;
+		case 2:
+			lcd.print("Heat");
+			break;
+		default:
+			/* if somehow, mode gets out of range, do something
+			 * about it here. Sensible fail-safe default may be OFF?
+			 */
+			mode = 0;
+			break;
+		}
+	} else if (lcd_key == btnSELECT) {
+		lcd.clear();
+		eeprom_write(mode_address, system_mode);
+	}
+	
 }
 
 void fan(int lcd_key) {
