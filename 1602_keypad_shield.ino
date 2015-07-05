@@ -196,7 +196,7 @@ void requested_temperature(int lcd_key) {
 
 void mode(int lcd_key) {
 
-  //sysem_mode
+  //system_mode
 
   lcd.print("Mode: ");
 
