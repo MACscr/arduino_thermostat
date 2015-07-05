@@ -7,15 +7,15 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 // initialize a few values
 int last_panel = 0;
-int press_count = 0;
 int timer = 0;
 int rtemp = 0;
 int system_mode = 0;
 int fan_mode = 0;
+int ctemp = 0;
+int humidity_lvl = 0;
 
 int max_panels = 4;
 int panel_num = 1;
-int ctemp = 77;
 
 // address of where were going to store the value in eeprom
 int rtemp_address = 0;
@@ -85,7 +85,7 @@ void loop() {
   lcd_key = read_LCD_buttons();  // read the buttons
 
   // check for button activity, if not, turn off backlight
-  if (lcd_key < 5) {
+  if (lcd_key < btnNONE) {
     digitalWrite(BACKLIGHT, HIGH);
     timer = 0;
   // if its been awhile since anyone touched a button, lets turn off the backlight
@@ -96,16 +96,16 @@ void loop() {
   lcd.setCursor(0,0);
 
   // Check values from LCD Keypad
-  if (lcd_key == 3) {
+  if (lcd_key == btnLEFT) {
     //Left
     state = 1;
-  } else if (lcd_key == 0){
+  } else if (lcd_key == btnRIGHT){
     //Right
     state = 2;
-  } else if (lcd_key == 1){
+  } else if (lcd_key == btnUP){
     //Up
     state = 3;
-  } else if (lcd_key == 2){
+  } else if (lcd_key == btnDOWN){
     //Down
     state = 4;
   }
@@ -141,7 +141,7 @@ void loop() {
   }
 
   //display panel, but dont keep recreating it if no button is pressed
-  if (panel_num == 1 || lcd_key != 5) {
+  if (panel_num == 1 || lcd_key != btnNONE) {
     displayPanel(panel_num,lcd_key);
   }
 
@@ -155,13 +155,14 @@ void loop() {
 
 void humidity() {
   // code to get DHT reading coming soon
-  int humidity_lvl = 44;
+  humidity_lvl = 44;
   lcd.print("Humidity: ");
   lcd.print(humidity_lvl);
   lcd.print("%");
 }
 
 void dht_temperature() {
+  ctemp = 77;
   lcd.setCursor(0,0);
   lcd.print("Cur Temp: ");
   lcd.print(ctemp);
@@ -174,9 +175,9 @@ void requested_temperature(int lcd_key) {
   //rtemp
 
   // add or increase temp based on up/down arrow
-  if (lcd_key == 1) {
+  if (lcd_key == btnUP) {
     rtemp = rtemp + 1;
-  }else if (lcd_key == 2) {
+  }else if (lcd_key == btnDOWN) {
     rtemp = rtemp - 1;
   }
 
@@ -186,7 +187,7 @@ void requested_temperature(int lcd_key) {
   lcd.print((char)223);
 
   // whene select button pressed, we save the data to eeprom and print SAVED to lcd
-  if (lcd_key == 4) {
+  if (lcd_key == btnSELECT) {
     lcd.clear();
     eeprom_write(rtemp_address, rtemp);
   }
@@ -194,34 +195,37 @@ void requested_temperature(int lcd_key) {
 
 void mode(int lcd_key) {
 
-  //example system_mode value from eeprom
-  //system_mode = 2;
-
   lcd.print("Mode: ");
-
-  // press_count used for cycling through values below
-  press_count++;
   lcd.setCursor(6,0);
-  switch (press_count % 3) {
+  
+  // Now change the unsaved mode
+  if (lcd_key == btnUP) {
+    if (system_mode < 2) system_mode++;
+  }
+  else if (lcd_key == btnDOWN) {
+    if (system_mode > 0) system_mode--;
+  }
+  switch(system_mode) {
     case 0:
       lcd.print("Off ");
-      system_mode = 0;
       break;
     case 1:
       lcd.print("Cool");
-      system_mode = 1;
       break;
     case 2:
       lcd.print("Heat");
-      system_mode = 2;
+      break;
+    default:
+      // if somehow, mode gets out of range, do something
+      // about it here. Sensible fail-safe default may be OFF?
+      system_mode = 0;
       break;
   }
-  
   // whene select button pressed, we save the data to eeprom and print SAVED to lcd
-  if (lcd_key == 4) {
+  if (lcd_key == btnSELECT) {
     lcd.clear();
     eeprom_write(mode_address, system_mode);
-  }  
+  } 
 }
 
 void fan(int lcd_key) {
@@ -230,11 +234,16 @@ void fan(int lcd_key) {
   //fan_mode = 1;
 
   lcd.print("Fan: ");
-
-  // press_count used for cycling through values below
-  press_count++;
   lcd.setCursor(5,0);
-  switch (press_count % 2) {
+  
+  // Now change the unsaved mode
+  if (lcd_key == btnUP) {
+    if (fan_mode < 1) fan_mode++;
+  }
+  else if (lcd_key == btnDOWN) {
+    if (fan_mode > 0) fan_mode--;
+  }
+  switch (fan_mode) {
     case 0:
       lcd.print("Auto");
       fan_mode = 0;
@@ -245,10 +254,8 @@ void fan(int lcd_key) {
       break;
   }
 
-  Serial.println(press_count);
-
   // whene select button pressed, we save the data to eeprom and print SAVED to lcd
-  if (lcd_key == 4) {
+  if (lcd_key == btnSELECT) {
     lcd.clear();
     eeprom_write(fan_address, fan_mode);
   }  
